@@ -156,12 +156,49 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:fl
     <div id="leaderboard"></div>
   </div>
 
+ <!-- CREATE COUNSELLOR -->
+  <div class="section">
+    <div class="section-title">CREATE COUNSELLOR ACCOUNT</div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:22px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:500">FULL NAME</div>
+          <input id="c-name" type="text" placeholder="Dr. Rehan Shah" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none">
+        </div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:500">EMAIL</div>
+          <input id="c-email" type="email" placeholder="rehan@email.com" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:500">PASSWORD</div>
+          <input id="c-password" type="text" placeholder="Set a password" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none">
+        </div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:500">FIELD OF EXPERTISE</div>
+          <select id="c-field" style="width:100%;background:#0B1F4A;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none;cursor:pointer">
+            <option value="">Select field</option>
+            <option>Medicine & Healthcare</option>
+            <option>Engineering & Tech</option>
+            <option>Business, Finance & MBA</option>
+            <option>Law & Civil Services</option>
+            <option>Creative & Media</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.2);margin-bottom:14px;line-height:1.6">After creating, share the counsellor portal URL + their email + password with them directly.</div>
+      <button onclick="createCounsellor()" id="createBtn" style="padding:13px 28px;background:#1A56DB;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Create Counsellor Account</button>
+      <div id="createResult" style="margin-top:12px;font-size:13px;display:none"></div>
+    </div>
+  </div>
+
   <!-- UNANSWERED QUESTIONS -->
   <div class="section">
     <div class="section-title">UNANSWERED QUESTIONS (oldest first)</div>
     <div id="unansweredList"></div>
   </div>
-</div>
 
 <script>
 const BACKEND = 'https://zenith-backend-mu.vercel.app/api';
@@ -294,6 +331,54 @@ async function loadStats() {
   } catch (e) {
     document.getElementById('lastUpdated').textContent = 'Failed to load. Please refresh.';
   }
+}
+async function createCounsellor() {
+  const name = document.getElementById('c-name').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const password = document.getElementById('c-password').value.trim();
+  const field = document.getElementById('c-field').value;
+  const result = document.getElementById('createResult');
+  const btn = document.getElementById('createBtn');
+
+  if (!name || !email || !password || !field) {
+    result.style.display = 'block';
+    result.style.color = '#F87171';
+    result.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  btn.textContent = 'Creating...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${BACKEND}/create-counsellor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, field })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      result.style.display = 'block';
+      result.style.color = '#0EA371';
+      result.textContent = '✓ Counsellor account created. Share the portal URL + their email + password with them.';
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-email').value = '';
+      document.getElementById('c-password').value = '';
+      document.getElementById('c-field').value = '';
+    } else {
+      result.style.display = 'block';
+      result.style.color = '#F87171';
+      result.textContent = 'Error: ' + (data.error || 'Something went wrong.');
+    }
+  } catch (e) {
+    result.style.display = 'block';
+    result.style.color = '#F87171';
+    result.textContent = 'Connection error. Please try again.';
+  }
+
+  btn.textContent = 'Create Counsellor Account';
+  btn.disabled = false;
 }
 </script>
 </body>
